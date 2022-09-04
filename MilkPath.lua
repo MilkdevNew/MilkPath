@@ -23,24 +23,55 @@ function Path.new(character,data)
 	local self = {}
 	self.Character = character
 	self.Humanoid = character:WaitForChild("Humanoid")
-	self.Path = PathfindingService:CreatePath(data)
-		
+	self.Path = PathfindingService:CreatePath()
+	
+	if data ~= nil then
+		self.Path = PathfindingService:CreatePath(data)
+	else
+		self.path = PathfindingService:CreatePath()
+	end
+	
 	return setmetatable(self,Path)
 end
 
-function Path:Run(object:Vector3,debug)
+function Path:Run(object,debug)
 	local path:Path = self.Path
 	local Humanoid:Humanoid = self.Humanoid
+	local Character = self.Character
 	
+	if Character.PrimaryPart.Anchored then
+		Character.PrimaryPart.Anchored = false
+	end
+	
+	Character.PrimaryPart:SetNetworkOwner(nil)
+
 	CacheParts:ClearAllChildren()
+
+	if typeof(object) == "Vector3" then
+		warn(object,"Vector")
+	else
+		if typeof(object) == "Instance" then
+			object = object.Position
+			if debug then
+				warn(object,"Part")
+			end
+		end
+	end
+	
+	task.wait(1)
 	
 	local success, errorMessage = pcall(function()
-		path:ComputeAsync(self.Character.PrimaryPart.Position, object)
+		if typeof(object) == "Vector3" then
+			path:ComputeAsync(self.Character.PrimaryPart.Position, object)
+		else
+			warn("No Vector")
+		end
+		
 	end)
-	
+
 	if success and path.Status == Enum.PathStatus.Success then
 		local waypoints = path:GetWaypoints()
-		
+
 		for i,item in pairs(waypoints) do
 			Humanoid:MoveTo(item.Position)
 			if debug ~= nil then
@@ -51,8 +82,7 @@ function Path:Run(object:Vector3,debug)
 			Humanoid.MoveToFinished:Wait()
 		end
 	else
-		warn(path.Status)
-		warn("Path failed")
+		warn("Path failed",path.Status)
 	end
 end
 
