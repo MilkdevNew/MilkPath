@@ -23,6 +23,7 @@ function Path.new(character,data)
 	local self = {}
 	self.Character = character
 	self.Humanoid = character:WaitForChild("Humanoid")
+	self.debug = false
 	self.Path = PathfindingService:CreatePath()
 
 	if data ~= nil then
@@ -34,9 +35,10 @@ function Path.new(character,data)
 	return setmetatable(self,Path)
 end
 
-function Path:Run(object,debug)
+function Path:Run(object)
 	local path:Path = self.Path
 	local Humanoid:Humanoid = self.Humanoid
+	local debug = self.debug
 	local Character = self.Character
 
 	if Character.PrimaryPart.Anchored then
@@ -48,13 +50,10 @@ function Path:Run(object,debug)
 	CacheParts:ClearAllChildren()
 
 	if typeof(object) == "Vector3" then
-		--warn(object,"Vector")
+
 	else
 		if typeof(object) == "Instance" then
 			object = object.Position
-			if debug then
-				warn(object,"Part")
-			end
 		end
 	end
 
